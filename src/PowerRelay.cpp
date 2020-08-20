@@ -15,41 +15,45 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
-#include "Event.hpp"
+#include "PowerRelay.hpp"
 
 
-Event::Event()
-    : _call(nullptr), _next(0)
+
+#include <hal-arduino-fm0-platform-io/GPIO_Pin_FeatherM0.hpp>
+
+
+namespace PowerRelay {
+
+
+/// The pin to control the power relay.
+///
+using gPowerRelayPin = lr::GPIO::Pin6;
+
+/// The current state of the relay.
+///
+State gState;
+
+
+void initialize()
 {
+    gPowerRelayPin::setOutputLow();
+    gPowerRelayPin::configureAsOutput();
+    gState = State::Off;
 }
 
 
-Event::Event(Function call, uint32_t next)
-    : _call(call), _next(next)
-{   
-}
-
-
-bool Event::isValid() const
+void setState(State state)
 {
-    return _call != nullptr;
+    if (state != gState) {
+        gState = state;
+        if (state == State::On) {
+            gPowerRelayPin::setOutputHigh();
+        } else {
+            gPowerRelayPin::setOutputLow();
+        }
+    }
 }
 
 
-bool Event::isReady(uint32_t currentTime) const
-{
-    const auto delta = static_cast<int32_t>(_next - currentTime);
-    return delta <= 0;  
 }
 
-
-Event::Function Event::getCall() const
-{
-    return _call;
-}
-
-
-void Event::clear()
-{
-    _call = nullptr;
-}

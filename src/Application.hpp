@@ -18,30 +18,17 @@
 //
 
 
-namespace Button {
+namespace Application {
 
 
-/// The type of button press.
-///
-enum class Press {
-    Short, ///< A short button press.
-    Long, ///< A long button press.
-};
-
-
-/// The callback function to receive motion events.
-///
-using Callback = void(*)(Press press);
-
-
-/// Initialize the button interface.
+/// Initialize the application.
 ///
 void initialize();
 
-/// Register a callback for button presses.
+/// Poll this from the main loop.
 ///
-void setCallback(Callback callback);
+void loop();
 
-  
+
 }
 

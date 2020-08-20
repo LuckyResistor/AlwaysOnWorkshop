@@ -18,28 +18,113 @@
 #include "Display.hpp"
 
 
-#include <Arduino.h>
-#include <Wire.h>
+#include "hal-common/event/Loop.hpp"
 
 
-namespace Display {
+using namespace lr;
 
 
-State gState = State::Off;
+const auto cLed1 = lr::TCA9534::Port0;
+const auto cLed2 = lr::TCA9534::Port1;
+const auto cLed3 = lr::TCA9534::Port2;
+const auto cLed4 = lr::TCA9534::Port3;
 
 
-void initialize()
+Display *gInstance = nullptr;
+
+
+Display::Display(WireMaster *bus)
+:
+    _io(bus, TCA9534::Address0),
+    _state(OperationState::Off),
+    _blinkCounter(0),
+    _offRequestEnabled(false)
 {
+    gInstance = this;
 }
 
 
-void setState(State state)
+Display::Status Display::initialize()
 {
-    if (gState != state) {
-        gState = state;
+    if (hasError(_io.initialize())) {
+        return Status::Error;
+    }
+    event::mainLoop().addRepeatedEvent([]{
+        gInstance->onBlinkEvent();
+    }, 750_ms);
+    return Status::Success;
+}
+
+
+void Display::setOperationState(OperationState state)
+{
+    if (_state != state) {
+        _state = state;
+        switch (_state) {
+        case OperationState::Off:
+            _io.setMode(cLed1, TCA9534::Mode::HighZ);
+            _io.setMode(cLed2, TCA9534::Mode::HighZ);
+            _io.setMode(cLed3, TCA9534::Mode::HighZ);
+            _io.setMode(cLed4, TCA9534::Mode::HighZ);
+            break;
+        case OperationState::Test:
+            _io.setMode(cLed1, TCA9534::Mode::Output_Low);
+            _io.setMode(cLed2, TCA9534::Mode::Output_Low);
+            _io.setMode(cLed3, TCA9534::Mode::Output_Low);
+            _io.setMode(cLed4, TCA9534::Mode::Output_Low);
+            break;
+        case OperationState::Stabilizing:
+            _io.setMode(cLed1, TCA9534::Mode::Output_Low);
+            _io.setMode(cLed2, TCA9534::Mode::HighZ);
+            _io.setMode(cLed3, TCA9534::Mode::HighZ);
+            _io.setMode(cLed4, TCA9534::Mode::HighZ);
+            break;
+        case OperationState::Running:
+            _io.setMode(cLed1, TCA9534::Mode::Output_Low);
+            break;
+        case OperationState::Failure:
+            _io.setMode(cLed4, TCA9534::Mode::Output_Low);
+            break;
+        }
     }
 }
 
 
+void Display::setOffRequest(bool enabled)
+{
+    if (_offRequestEnabled != enabled) {
+        _offRequestEnabled = enabled;
+        if (enabled) {
+            _io.setMode(cLed2, TCA9534::Mode::Output_Low);
+        } else {
+            _io.setMode(cLed2, TCA9534::Mode::HighZ);
+        }
+    }
+}
+
+
+void Display::onBlinkEvent()
+{
+    ++_blinkCounter;
+    if (_state == OperationState::Stabilizing) {
+        if ((_blinkCounter & 1) == 0) {
+            _io.setMode(cLed1, TCA9534::Mode::HighZ);
+        } else {
+            _io.setMode(cLed1, TCA9534::Mode::Output_Low);
+        }
+    } else if (_state == OperationState::Failure) {
+        if ((_blinkCounter & 1) == 0) {
+            _io.setMode(cLed4, TCA9534::Mode::HighZ);
+        } else {
+            _io.setMode(cLed4, TCA9534::Mode::Output_Low);
+        }
+    }
+    if (_offRequestEnabled) {
+        if ((_blinkCounter & 1) == 0) {
+            _io.setMode(cLed2, TCA9534::Mode::HighZ);
+        } else {
+            _io.setMode(cLed2, TCA9534::Mode::Output_Low);
+        }
+    }
 }
 

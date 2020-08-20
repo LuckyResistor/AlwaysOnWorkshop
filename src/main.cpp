@@ -17,31 +17,19 @@
 //
 
 
-#include "Button.hpp"
-#include "EventLoop.hpp"
-#include "Display.hpp"
+#include "Application.hpp"
 
 #include <Arduino.h>
-#include <Wire.h>
 
 
-/// Setup the device.
-///
 void setup()
 {
-    Wire.begin();
-    EventLoop::initialize();
-    Button::initialize();
-    Display::initialize();
-
-    Display::setState(Display::State::Stabilizing);
+    Application::initialize();
 }
 
-/// The main loop of the devive.
-///
+
 void loop()
 {
-    EventLoop::loop();
-    delay(1);
+    Application::loop();
 }
 

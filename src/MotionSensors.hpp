@@ -18,30 +18,37 @@
 //
 
 
-namespace Button {
+#include <hal-common/StatusTools.hpp>
 
 
-/// The type of button press.
+namespace MotionSensors {
+
+
+/// The status of function calls.
 ///
-enum class Press {
-    Short, ///< A short button press.
-    Long, ///< A long button press.
-};
-
+using Status = lr::CallStatus;
 
 /// The callback function to receive motion events.
 ///
-using Callback = void(*)(Press press);
+using MotionCallback = void(*)(bool motionDetected);
 
 
-/// Initialize the button interface.
+/// Initialize the motion sensors module.
 ///
-void initialize();
+Status initialize();
 
-/// Register a callback for button presses.
+/// Check if the motion sensors are ready and return reliable readings.
 ///
-void setCallback(Callback callback);
+bool isReady();
 
-  
+/// Check if there is motion.
+///
+bool isMotionDetected();
+
+/// Register a callback for motion events.
+///
+void setMotionCallback(MotionCallback callBack);
+
+
 }
 

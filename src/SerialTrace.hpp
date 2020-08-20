@@ -18,30 +18,29 @@
 //
 
 
-#include "Event.hpp"
+#include "hal-common/SerialLineStringWriter.hpp"
 
 
-namespace EventLoop {
-
-/// The event function declaration.
-///
-typedef void (*Function)();
+namespace SerialTrace {
 
 
-/// Initialize the event loop.
+/// Initialize the serial trace interface.
 ///
 void initialize();
 
-/// Add a delayed event.
+/// Check if event logging is activated.
 ///
-void addDelayedEvent(Function call, uint32_t delay);
+bool isEventLoggingActivated();
 
-/// Process one loop iteration.
+
+/// The string writer.
 ///
-/// Call this function every ms.
-///
-void loop();
-  
+extern lr::SerialLineStringWriter gSerial;
+
 
 }
+
+
+// Import `gSerial` into global namepspace.
+using SerialTrace::gSerial;
 

@@ -18,30 +18,25 @@
 //
 
 
-namespace Button {
+namespace PowerRelay {
 
 
-/// The type of button press.
+/// The state of the relay.
 ///
-enum class Press {
-    Short, ///< A short button press.
-    Long, ///< A long button press.
+enum class State {
+    Off, ///< The relay is off.
+    On, ///< The relay is on.
 };
 
 
-/// The callback function to receive motion events.
-///
-using Callback = void(*)(Press press);
-
-
-/// Initialize the button interface.
+/// Initialize this module.
 ///
 void initialize();
 
-/// Register a callback for button presses.
+/// Set the state of the power switch.
 ///
-void setCallback(Callback callback);
+void setState(State state);
 
-  
+
 }
 

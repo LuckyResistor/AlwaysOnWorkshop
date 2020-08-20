@@ -18,30 +18,29 @@
 //
 
 
-namespace Button {
+#include <hal-common/Duration.hpp>
 
 
-/// The type of button press.
+namespace Configuration {
+
+
+/// The required stabilizing delay for the used motion sensors.
 ///
-enum class Press {
-    Short, ///< A short button press.
-    Long, ///< A long button press.
-};
+const auto stabilizingDelay = 12_s;
 
-
-/// The callback function to receive motion events.
+/// The regular duration the light is kept on with no motion detected.
 ///
-using Callback = void(*)(Press press);
+const auto normalLightOnDuration = 1_hours;
 
-
-/// Initialize the button interface.
+/// The short duration the light is kept on after the light button is pressed.
 ///
-void initialize();
+const auto offRequestLightOnDuration = 30_s;
 
-/// Register a callback for button presses.
+/// The duration the off-request is kept with motion in the room.
+/// After this duration, the system clears the off-request.
 ///
-void setCallback(Callback callback);
+const auto offRequestDuration = 5_minutes;
 
-  
+
 }
 

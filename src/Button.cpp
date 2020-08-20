@@ -18,27 +18,78 @@
 #include "Button.hpp"
 
 
-#include "EventLoop.hpp"
+#include <hal-common/event/Loop.hpp>
+#include <hal-arduino-fm0-platform-io/GPIO_Pin_FeatherM0.hpp>
 
-#include <Arduino.h>
+#include <limits>
 
 
 namespace Button {
 
 
-const int cButtonPin = 5;
+/// The type for the button press counter.
+///
+using ButtonPressCounter = uint8_t;
+
+/// The count limit for long button presses.
+///
+const ButtonPressCounter cLongButtonPressCount = 40;
+
+
+/// The pin where the button signal is attached.
+///
+using gButtonPin = lr::GPIO::Pin5;
+
+/// The callback function.
+///
+Callback gCallback = nullptr;
+
+/// The counter to the press duration.
+///
+ButtonPressCounter gButtonPressCounter = 0;
+
+/// The last button state.
+///
+bool gLastButtonState = false;
 
 
 void pollState()
 {
-    
-    EventLoop::addDelayedEvent(&pollState, 10);  
+    const bool buttonState = !(gButtonPin::getInput()); // button low if pressed.
+    if (buttonState != gLastButtonState) {
+        gLastButtonState = buttonState;
+        if (buttonState) {
+            gButtonPressCounter = 0;
+        } else {
+            // Call the events after the button is released.
+            if (gCallback) {
+                if (gButtonPressCounter < cLongButtonPressCount) {
+                    gCallback(Press::Short);
+                } else {
+                    gCallback(Press::Long);
+                }
+            }
+        }
+    }
+    // Count while the button is pressed.
+    if (gLastButtonState) {
+        if (gButtonPressCounter < std::numeric_limits<ButtonPressCounter>::max()) {
+            ++gButtonPressCounter;
+        }
+    }
 }
+
 
 void initialize()
 {
-    pinMode(cButtonPin, INPUT);
-    EventLoop::addDelayedEvent(&pollState, 10);
+    gButtonPin::configureAsInput();
+    lr::event::mainLoop().addRepeatedEvent(&pollState, 50_ms);
+}
+
+
+void setCallback(Callback callback)
+{
+    gCallback = callback;
 }
 
 

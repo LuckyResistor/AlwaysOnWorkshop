@@ -18,24 +18,54 @@
 //
 
 
-namespace Display {
+#include "hal-tca9534/TCA9534.hpp"
 
 
-enum class State {
-    Off,
-    Stabilizing,
-    Running,
+/// The display module
+///
+class Display
+{
+public:
+    /// The main operation state of the device.
+    ///
+    enum class OperationState {
+        Off,             ///< Initial state with all lights off.
+        Test,            ///< Initial test if all LEDs. 
+        Stabilizing,     ///< The system is running, but the motion sensor is warming up.
+        Running,         ///< The system is running and ready.
+        Failure          ///< A fatal system failure.
+    };
+
+    /// The call status
+    ///
+    using Status = lr::CallStatus;
+
+public:
+    /// Create a new display module instance.
+    ///
+    Display(lr::WireMaster *bus);
+
+    /// Initialize the display interface.
+    ///
+    Status initialize();
+
+    /// Set the displayed state.
+    ///
+    void setOperationState(OperationState state);
+
+    /// Set the off request indicator.
+    ///
+    void setOffRequest(bool enabled);
+
+public:
+    /// Event handler for blinking LEDs.
+    ///
+    void onBlinkEvent();    
+
+private:
+    lr::TCA9534 _io; ///< The interface for the IO chip.
+    OperationState _state; ///< The current operation state.
+    uint8_t _blinkCounter; ///< The blink counter.
+    bool _offRequestEnabled; ///< The off request indicator.
 };
 
-
-
-/// Initialize the display interface.
-///
-void initialize();
-
-/// Set the displayed state.
-///
-void setState(State state);
-
-
-}

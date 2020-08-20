@@ -1,0 +1,12 @@
+[submodule "src/hal-common"]
+	path = src/hal-common
+	url = git@github.com:LuckyResistor/HAL-common.git
+[submodule "src/hal-arduino-platform-io"]
+	path = src/hal-arduino-platform-io
+	url = git@github.com:LuckyResistor/HAL-arduino-platform-io.git
+[submodule "src/hal-tca9534"]
+	path = src/hal-tca9534
+	url = git@github.com:LuckyResistor/HAL-TCA9534.git
+[submodule "src/hal-arduino-fm0-platform-io"]
+	path = src/hal-arduino-fm0-platform-io
+	url = git@github.com:LuckyResistor/HAL-arduino-fm0-platform-io.git
